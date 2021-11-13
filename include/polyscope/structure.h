@@ -34,26 +34,27 @@ public:
   virtual ~Structure() = 0;
 
   // == Render the the structure on screen
-  virtual void draw() = 0;
-  virtual void drawPick() = 0;
+  virtual void draw();
+  virtual void drawPick();
 
   // == Add rendering rules
   std::vector<std::string> addStructureRules(std::vector<std::string> initRules);
 
   // == Build the ImGUI ui elements
-  void buildUI();
-  virtual void buildCustomUI() = 0;       // overridden by childen to add custom UI data
-  virtual void buildCustomOptionsUI();    // overridden by childen to add to the options menu
-  virtual void buildStructureOptionsUI(); // overridden by structure quantities to add to the options menu
-  virtual void buildQuantitiesUI();       // build quantities, if they exist. Overridden by QuantityStructure.
-  virtual void buildSharedStructureUI();  // Draw any UI elements shared between all instances of the structure
-  virtual void buildPickUI(size_t localPickID) = 0; // Draw pick UI elements when index localPickID is selected
+  virtual void buildUI();
+  virtual void buildCustomUI() = 0;             // overridden by childen to add custom UI data
+  virtual void buildCustomOptionsUI();          // overridden by childen to add to the options menu
+  virtual void buildStructureOptionsUI();       // overridden by structure quantities to add to the options menu
+  virtual void buildQuantitiesUI();             // build quantities, if they exist. Overridden by QuantityStructure.
+  virtual void buildSharedStructureUI();        // Draw any UI elements shared between all instances of the structure
+  virtual void buildPickUI(size_t localPickID); // Draw pick UI elements when index localPickID is selected
 
   // = Identifying data
   const std::string name; // should be unique amongst registered structures with this type
   std::string uniquePrefix();
 
   // = Length and bounding box (returned in object coordinates)
+  virtual bool hasExtents(); // bounding box and length scale are only meaningful if true
   virtual std::tuple<glm::vec3, glm::vec3> boundingBox() = 0; // get axis-aligned bounding box
   virtual double lengthScale() = 0;                           // get characteristic length
 
@@ -83,7 +84,7 @@ public:
   // Options
   Structure* setTransparency(double newVal); // also enables transparency if <1 and transparency is not enabled
   double getTransparency();
-  
+
   Structure* setCullWholeElements(bool newVal);
   bool getCullWholeElements();
 
@@ -93,7 +94,7 @@ public:
 protected:
   // = State
   PersistentValue<bool> enabled;
-  
+
   PersistentValue<glm::mat4> objectTransform;
 
   // 0 for transparent, 1 for opaque, only has effect if engine transparency is set
@@ -101,7 +102,7 @@ protected:
 
   // Widget that wraps the transform
   TransformationGizmo transformGizmo;
-  
+
   PersistentValue<bool> cullWholeElements;
   PersistentValue<std::vector<std::string>> ignoredSlicePlaneNames;
 };

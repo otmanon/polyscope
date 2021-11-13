@@ -308,6 +308,9 @@ public:
   virtual void clearDisplay();
   virtual void bindDisplay();
   virtual void swapDisplayBuffers() = 0;
+  void pushBindFramebufferForRendering(
+      FrameBuffer& f); // push the existing rendering framebuffer on to a stack and bind to f for rendering
+  void popBindFramebufferForRendering(); // pop the old framebuffer off the stack and bind to it
   virtual std::vector<unsigned char> readDisplayBuffer() = 0;
 
   virtual void clearSceneBuffer();
@@ -413,7 +416,7 @@ public:
   virtual void applyTransparencySettings() = 0;
   void addSlicePlane(std::string uniquePostfix);
   void removeSlicePlane(std::string uniquePostfix);
-  bool slicePlanesEnabled(); // true if there is at least one slice plane in the scene
+  bool slicePlanesEnabled();                     // true if there is at least one slice plane in the scene
   virtual void setFrontFaceCCW(bool newVal) = 0; // true if CCW triangles are considered front-facing; false otherwise
   bool getFrontFaceCCW();
 
@@ -457,6 +460,7 @@ public:
   ImFontAtlas* globalFontAtlas = nullptr;
   ImFont* regularFont = nullptr;
   ImFont* monoFont = nullptr;
+  FrameBuffer* currRenderFramebuffer = nullptr;
 
 protected:
   // TODO Manage a cache of compiled shaders?
@@ -470,6 +474,7 @@ protected:
   TransparencyMode transparencyMode = TransparencyMode::None;
   int slicePlaneCount = 0;
   bool frontFaceCCW = true;
+  std::vector<FrameBuffer*> renderFramebufferStack; // supports push/popBindFramebufferForRendering
 
   // Cached lazy seettings for the resolve and relight program
   int currLightingSampleLevel = -1;

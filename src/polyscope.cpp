@@ -1000,6 +1000,9 @@ void updateStructureExtents() {
 
   for (auto cat : state::structures) {
     for (auto x : cat.second) {
+      if (!x.second->hasExtents()) {
+        continue;
+      }
       state::lengthScale = std::max(state::lengthScale, x.second->lengthScale());
       auto bbox = x.second->boundingBox();
       minBbox = componentwiseMin(minBbox, std::get<0>(bbox));
@@ -1015,7 +1018,7 @@ void updateStructureExtents() {
 
   // If we got a degenerate bounding box, perturb it slightly
   if (minBbox == maxBbox) {
-    double offsetScale = (state::lengthScale == 0) ? 1e-5 : state::lengthScale*1e-5;
+    double offsetScale = (state::lengthScale == 0) ? 1e-5 : state::lengthScale * 1e-5;
     glm::vec3 offset{offsetScale, offsetScale, offsetScale};
     minBbox = minBbox - offset / 2.f;
     maxBbox = maxBbox + offset / 2.f;
