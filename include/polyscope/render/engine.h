@@ -348,6 +348,7 @@ public:
 
   // === Windowing and framework things
   virtual void makeContextCurrent() = 0;
+  virtual void focusWindow() = 0;
   virtual void showWindow() = 0;
   virtual void hideWindow() = 0;
   virtual void updateWindowSize(bool force = false) = 0;

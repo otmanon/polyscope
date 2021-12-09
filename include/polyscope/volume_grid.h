@@ -40,19 +40,12 @@ public:
   virtual void buildCustomUI() override;
   virtual void buildPickUI(size_t localPickID) override;
 
-  // Render the the structure on screen
+
+  // Standard structure overrides
   virtual void draw() override;
-
-  // Render for picking
   virtual void drawPick() override;
-
-  // A characteristic length for the structure
-  virtual double lengthScale() override;
-
-  // Axis-aligned bounding box for the structure
-  virtual std::tuple<glm::vec3, glm::vec3> boundingBox() override;
+  virtual void updateObjectSpaceBounds() override;
   virtual std::string typeName() override;
-
   virtual void refresh() override;
 
   // Field data

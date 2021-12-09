@@ -28,6 +28,7 @@ if("${POLYSCOPE_BACKEND_OPENGL3_GLFW}")
     render/opengl/shaders/gizmo_shaders.cpp  
     render/opengl/shaders/histogram_shaders.cpp  
     render/opengl/shaders/surface_mesh_shaders.cpp  
+    render/opengl/shaders/volume_mesh_shaders.cpp  
     render/opengl/shaders/vector_shaders.cpp  
     render/opengl/shaders/sphere_shaders.cpp  
     render/opengl/shaders/ribbon_shaders.cpp  
@@ -85,6 +86,7 @@ if("${POLYSCOPE_BACKEND_OPENGL_MOCK}")
     render/opengl/shaders/gizmo_shaders.cpp  
     render/opengl/shaders/histogram_shaders.cpp  
     render/opengl/shaders/surface_mesh_shaders.cpp  
+    render/opengl/shaders/volume_mesh_shaders.cpp  
     render/opengl/shaders/vector_shaders.cpp  
     render/opengl/shaders/sphere_shaders.cpp  
     render/opengl/shaders/ribbon_shaders.cpp  
@@ -189,6 +191,7 @@ SET(SRCS
   floating_color_image.cpp
   
   # Rendering utilities
+  imgui_config.cpp
   vector_artist.cpp
   trace_vector_field.cpp
   ribbon_artist.cpp
@@ -234,6 +237,7 @@ SET(HEADERS
   ${INCLUDE_ROOT}/histogram.h
   ${INCLUDE_ROOT}/image_scalar_artist.h
   ${INCLUDE_ROOT}/image_scalar_artist.ipp
+  ${INCLUDE_ROOT}/imgui_config.h
   ${INCLUDE_ROOT}/messages.h
   ${INCLUDE_ROOT}/options.h
   ${INCLUDE_ROOT}/persistent_value.h

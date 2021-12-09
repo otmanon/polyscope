@@ -44,13 +44,13 @@ public:
   virtual void buildUI() override;
   virtual void buildCustomUI() override;
   virtual void buildCustomOptionsUI() override;
-
+  
   // Standard structure overrides
   virtual void draw() override;
   virtual bool hasExtents() override;
-  virtual double lengthScale() override;
-  virtual std::tuple<glm::vec3, glm::vec3> boundingBox() override;
+  virtual void updateObjectSpaceBounds() override;
   virtual std::string typeName() override;
+  //virtual void refresh() override;
 
   // === Quantities
   // public here unlke other structures, since we add to the global class from free functions
