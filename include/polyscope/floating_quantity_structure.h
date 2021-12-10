@@ -44,13 +44,13 @@ public:
   virtual void buildUI() override;
   virtual void buildCustomUI() override;
   virtual void buildCustomOptionsUI() override;
-  
+
   // Standard structure overrides
   virtual void draw() override;
   virtual bool hasExtents() override;
   virtual void updateObjectSpaceBounds() override;
   virtual std::string typeName() override;
-  //virtual void refresh() override;
+  // virtual void refresh() override;
 
   // === Quantities
   // public here unlke other structures, since we add to the global class from free functions
@@ -69,8 +69,11 @@ static FloatingQuantityStructure* globalFloatingQuantityStructure = nullptr;
 FloatingQuantityStructure* getGlobalFloatingQuantityStructure(); // creates it if it doesn't exit yet
 void removeFloatingQuantityStructureIfEmpty();
 
+// manage all quantities
+void removeFloatingQuantity(std::string name, bool errorIfAbsent = false);
+void removeAllFloatingQuantities();
 
-// add/remove quantities
+// add/remove particular quantities
 template <class T>
 FloatingScalarImageQuantity* addFloatingScalarImage(std::string name, size_t dimX, size_t dimY, const T& values,
                                                     DataType type = DataType::STANDARD);
