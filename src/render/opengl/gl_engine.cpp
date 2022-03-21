@@ -1097,13 +1097,17 @@ void GLShaderProgram::setAttribute(std::string name, const std::vector<glm::vec3
   // Reshape the vector
   // Right now, the data is probably laid out in this form already... but let's
   // not be overly clever and just reshape it.
+  if (!update) { //keep this for now so we can evaluate performance speedup
   std::vector<float> rawData(3 * data.size());
-  for (unsigned int i = 0; i < data.size(); i++) {
-    rawData[3 * i + 0] = static_cast<float>(data[i].x);
-    rawData[3 * i + 1] = static_cast<float>(data[i].y);
-    rawData[3 * i + 2] = static_cast<float>(data[i].z);
+      for (unsigned int i = 0; i < data.size(); i++) {
+        rawData[3 * i + 0] = static_cast<float>(data[i].x);
+        rawData[3 * i + 1] = static_cast<float>(data[i].y);
+        rawData[3 * i + 2] = static_cast<float>(data[i].z);
+      }
   }
-
+  size_t vec_3_size = sizeof(glm::vec3);
+  size_t raw_data_size = sizeof(float);
+  assert(vec_3_size== 3*sizeof(float)); //makes glm::vec3 is not padded with another entry that would ruin the memory layout of data
   for (GLShaderAttribute& a : attributes) {
     if (a.name == name) {
       if (a.type == DataType::Vector3Float) {
@@ -1118,9 +1122,9 @@ void GLShaderProgram::setAttribute(std::string name, const std::vector<glm::vec3
           else
             size *= 3 * sizeof(float);
 
-          glBufferSubData(GL_ARRAY_BUFFER, offset, size, rawData.empty() ? nullptr : &rawData[0]);
+          glBufferSubData(GL_ARRAY_BUFFER, offset, size,data.empty() ? nullptr : &data[0]);
         } else {
-          glBufferData(GL_ARRAY_BUFFER, 3 * data.size() * sizeof(float), rawData.empty() ? nullptr : &rawData[0],
+          glBufferData(GL_ARRAY_BUFFER, 3 * data.size() * sizeof(float), data.empty() ? nullptr : &data[0],
                        GL_STATIC_DRAW);
           a.dataSize = data.size();
         }
@@ -1206,6 +1210,48 @@ void GLShaderProgram::setAttribute(std::string name, const std::vector<double>& 
           glBufferSubData(GL_ARRAY_BUFFER, offset, size, floatData.empty() ? nullptr : &floatData[0]);
         } else {
           glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), floatData.empty() ? nullptr : &floatData[0],
+                       GL_STATIC_DRAW);
+          a.dataSize = data.size();
+        }
+      } else {
+        throw std::invalid_argument("Tried to set GLShaderAttribute named " + name +
+                                    " with wrong type. Actual type: " + std::to_string(static_cast<int>(a.type)) +
+                                    "  Attempted type: " + std::to_string(static_cast<float>(DataType::Float)));
+      }
+      return;
+    }
+  }
+
+  throw std::invalid_argument("No attribute with name " + name);
+}
+
+void GLShaderProgram::setAttribute(std::string name, const std::vector<float>& data, bool update, int offset,
+                                   int size) {
+  // Convert input data to floats
+  if (!update) { //keep this around for now to evaluate performance speedup with update flag
+      std::vector<float> floatData(data.size());
+      for (unsigned int i = 0; i < data.size(); i++) {
+        floatData[i] = static_cast<float>(data[i]);
+      }
+  }
+
+  for (GLShaderAttribute& a : attributes) {
+    if (a.name == name) {
+      if (a.type == DataType::Float) {
+        if (a.location == -1) return;
+        glBindVertexArray(vaoHandle);
+        glBindBuffer(GL_ARRAY_BUFFER, a.VBOLoc);
+        if (update) {
+          // TODO: Allow modifications to non-contiguous memory
+          offset *= sizeof(float);
+          if (size == -1)
+            size = a.dataSize * sizeof(float);
+          else
+            size *= sizeof(float);
+
+          glBufferSubData(GL_ARRAY_BUFFER, offset, size, data.empty() ? nullptr : &data[0]);
+        } else {
+          glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.empty() ? nullptr : &data[0],
                        GL_STATIC_DRAW);
           a.dataSize = data.size();
         }

@@ -262,7 +262,7 @@ void VolumeMesh::removeSlicePlaneListener(polyscope::SlicePlane* sp) {
   }
 }
 
-void VolumeMesh::fillSliceGeometryBuffers(render::ShaderProgram& program) {
+void VolumeMesh::fillSliceGeometryBuffers(render::ShaderProgram& program, bool update_buffers) {
 
   ensureHaveTets();
 
@@ -625,7 +625,7 @@ void VolumeMesh::setVolumeMeshUniforms(render::ShaderProgram& p) {
   }
 }
 
-void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p) {
+void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p, bool update_buffers) {
 
   // NOTE: If we were to fill buffers naively via a loop over cells, we get pretty bad z-fighting artifacts where
   // interior edges ever-so-slightly show through the exterior boundary (more generally, any place 3 faces meet at an
@@ -635,32 +635,32 @@ void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p) {
   // that exterior faces always win depth ties. This doesn't totally eliminate the problem, but greatly improves the
   // most egregious cases.
 
-  std::vector<glm::vec3> positions;
-  std::vector<glm::vec3> normals;
-  std::vector<glm::vec3> bcoord;
-  std::vector<glm::vec3> edgeReal;
-  std::vector<double> faceTypes;
-  std::vector<glm::vec3> barycenters;
 
   bool wantsBary = p.hasAttribute("a_barycoord");
   bool wantsEdge = (getEdgeWidth() > 0);
   bool wantsBarycenters = wantsCullPosition();
   bool wantsFaceType = p.hasAttribute("a_faceColorType");
 
-  positions.resize(3 * nFacesTriangulation());
-  normals.resize(3 * nFacesTriangulation());
-  if (wantsBary) {
-    bcoord.resize(3 * nFacesTriangulation());
-  }
-  if (wantsEdge) {
-    edgeReal.resize(3 * nFacesTriangulation());
-  }
-  if (wantsBarycenters) {
-    barycenters.resize(3 * nFacesTriangulation());
-  }
-  if (wantsFaceType) {
-    faceTypes.resize(3 * nFacesTriangulation());
-  }
+
+  if (!update_buffers) //re-initialize all these buffers from scratch
+  {
+    positions = std::vector<glm::vec3>(3 * nFacesTriangulation());
+    normals = std::vector<glm::vec3>(3 * nFacesTriangulation());
+    if (wantsBary) {
+      bcoord = std::vector<glm::vec3>(3 * nFacesTriangulation());
+    }
+    if (wantsEdge) {
+      edgeReal = std::vector<glm::vec3>(3 * nFacesTriangulation());
+    }
+    if (wantsBarycenters) {
+      barycenters = std::vector<glm::vec3>(3 * nFacesTriangulation());
+    }
+    if (wantsFaceType) {
+      faceTypes = std::vector<float>(3 * nFacesTriangulation());
+    }
+ }
+
+
 
   size_t iF = 0;
   size_t iFront = 0;
@@ -751,19 +751,20 @@ void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p) {
   }
 
   // Store data in buffers
-  p.setAttribute("a_position", positions);
-  p.setAttribute("a_normal", normals);
+  //pass the update flag to the SetAttribute method so we know not to reallocate memory buffers
+  p.setAttribute("a_position", positions, update_buffers);
+  p.setAttribute("a_normal", normals, update_buffers);
   if (wantsBary) {
-    p.setAttribute("a_barycoord", bcoord);
+    p.setAttribute("a_barycoord", bcoord, update_buffers);
   }
   if (wantsEdge) {
-    p.setAttribute("a_edgeIsReal", edgeReal);
+    p.setAttribute("a_edgeIsReal", edgeReal, update_buffers);
   }
   if (wantsCullPosition()) {
-    p.setAttribute("a_cullPos", barycenters);
+    p.setAttribute("a_cullPos", barycenters, update_buffers);
   }
   if (wantsFaceType) {
-    p.setAttribute("a_faceColorType", faceTypes);
+    p.setAttribute("a_faceColorType", faceTypes, update_buffers);
   }
 }
 
@@ -930,14 +931,23 @@ void VolumeMesh::refresh() {
   QuantityStructure<VolumeMesh>::refresh(); // call base class version, which refreshes quantities
 }
 
-void VolumeMesh::geometryChanged() {
+void VolumeMesh::geometryChanged(bool update_buffers) {
+  bool update = (program && pickProgram);
+   
   computeGeometryData();
   refreshVolumeMeshListeners();
-  if (program) {
-    fillGeometryBuffers(*program);
-  }
-  if (pickProgram) {
-    fillGeometryBuffers(*pickProgram);
+  if (update) 
+  {
+      if (update_buffers)
+      {
+        fillGeometryBuffers(*program, update);
+        fillGeometryBuffers(*pickProgram, update);
+      }
+      else
+      {
+        fillGeometryBuffers(*program);
+        fillGeometryBuffers(*pickProgram);
+      }
   }
   requestRedraw();
   QuantityStructure<VolumeMesh>::refresh();

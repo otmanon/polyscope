@@ -81,7 +81,7 @@ public:
 
   // === Mutate
   template <class V>
-  void updateVertexPositions(const V& newPositions);
+  void updateVertexPositions(const V& newPositions, bool update_buffers = false);
 
 
   // === Indexing conventions
@@ -116,6 +116,14 @@ public:
   std::vector<double> faceAreas;
   std::vector<double> vertexAreas;
   std::vector<char> faceIsInterior; // a flat array whose order matches the iteration order of the mesh
+
+
+  std::vector<glm::vec3> positions;
+  std::vector<glm::vec3> normals;
+  std::vector<glm::vec3> bcoord;
+  std::vector<glm::vec3> edgeReal;
+  std::vector<float> faceTypes;
+  std::vector<glm::vec3> barycenters;
 
   // = Mesh helpers
   VolumeCellType cellType(size_t i) const;
@@ -163,8 +171,8 @@ public:
 
   // Rendering helpers used by quantities
   void setVolumeMeshUniforms(render::ShaderProgram& p);
-  void fillGeometryBuffers(render::ShaderProgram& p);
-  void fillSliceGeometryBuffers(render::ShaderProgram& p);
+  void fillGeometryBuffers(render::ShaderProgram& p, bool update_buffers = false);
+  void fillSliceGeometryBuffers(render::ShaderProgram& p, bool update_buffers = false); //not using the update flag at all here yet, just miight be something useful later
   static const std::vector<std::vector<std::array<size_t, 3>>>& cellStencil(VolumeCellType type);
 
   // Slice plane listeners
@@ -190,7 +198,7 @@ private:
   // Do setup work related to drawing, including allocating openGL data
   void prepare();
   void preparePick();
-  void geometryChanged(); // call whenever geometry changed
+  void geometryChanged(bool update_buffers = false); // call whenever geometry changed
 
   // Picking-related
   // Order of indexing: vertices, cells
