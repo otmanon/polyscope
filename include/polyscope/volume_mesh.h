@@ -172,6 +172,7 @@ public:
   // Rendering helpers used by quantities
   void setVolumeMeshUniforms(render::ShaderProgram& p);
   void fillGeometryBuffers(render::ShaderProgram& p, bool update_buffers = false);
+  void fillGeometryBuffersPickProgram(render::ShaderProgram& p, bool update_buffers = false); //barebones fillGeometryBuffers for pick program, which I assume only needs positions
   void fillSliceGeometryBuffers(render::ShaderProgram& p, bool update_buffers = false); //not using the update flag at all here yet, just miight be something useful later
   static const std::vector<std::vector<std::array<size_t, 3>>>& cellStencil(VolumeCellType type);
 

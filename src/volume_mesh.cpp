@@ -660,8 +660,6 @@ void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p, bool update_buffe
     }
  }
 
-
-
   size_t iF = 0;
   size_t iFront = 0;
   size_t iBack = 3 * nFacesTriangulation() - 3;
@@ -767,6 +765,17 @@ void VolumeMesh::fillGeometryBuffers(render::ShaderProgram& p, bool update_buffe
     p.setAttribute("a_faceColorType", faceTypes, update_buffers);
   }
 }
+
+void VolumeMesh::fillGeometryBuffersPickProgram(render::ShaderProgram& p, bool update_buffers)
+{
+  if (!update_buffers) // re-initialize all these buffers from scratch
+  {
+    positions = std::vector<glm::vec3>(3 * nFacesTriangulation());
+  }
+  p.setAttribute("a_position", positions, update_buffers);
+
+
+ }
 
 const std::vector<std::vector<std::array<size_t, 3>>>& VolumeMesh::cellStencil(VolumeCellType type) {
   switch (type) {
@@ -941,7 +950,7 @@ void VolumeMesh::geometryChanged(bool update_buffers) {
       if (update_buffers)
       {
         fillGeometryBuffers(*program, update);
-        fillGeometryBuffers(*pickProgram, update);
+        fillGeometryBuffersPickProgram(*pickProgram, update);
       }
       else
       {
